@@ -12,39 +12,24 @@ from recurso_prueba import*
 if __name__ == "__main__":
     while True:
 
-        cliente='RENZO ZEBALLOS DEZA'
-        clienteInmueble='RENZO'
-        empleador='CORPORACION SECURITY TECH'
-        
+        cliente = 'JULIO CESAR LABAN RAMIREZ'
+        ruta_guardar='C:/Users/DELL/Desktop/pruebaword/porcentajedocprueba.docx'
         #principal('exp3974679','prestamofirma','SOLCREDITOHIPOTECARIO_3974679_9',cliente)
 
-        """print('formato 1')
-        ruta1='C:/Users/DELL/Desktop/pruebaword/exp3974679/prestamofirma/SOLCREDITOHIPOTECARIO_3974679_9.docx'
-        doc1=docx.Document(ruta1)
-        cambiarcomas(doc1)
-        cambiar_porcentaje(doc1)"""
+        ruta1='C:/Users/DELL/Desktop/pruebaword/exp3892562/prestamo/SOLCREDITOHIPOTECARIO_3892562_15.docx'
+        principalv3(ruta1,cliente,ruta_guardar)
 
-        ruta1='C:/Users/DELL/Desktop/pruebaword/exp3956235/prestamo/SOLCREDITOHIPOTECARIO_3956235_13.docx'
-        doc1=docx.Document(ruta1)
-        cambiarcomas(doc1)
-        cambiar_porcentaje(doc1)
+        """doc1=docx.Document(ruta1)
+        #leerdoc(doc1)
         buscar_palabra(cliente,doc1)
-        camrbiarmillon(doc1)
+        editar_linea(doc1,'SEÑOR NOTARIO:','‎',ruta_guardar)#U+200E es un caracter vacio
+        porcentaje_decimalv2(doc1,ruta_guardar)
+        cambiarcomas(doc1,ruta_guardar)
+        camrbiarmillon(doc1,ruta_guardar)
 
-        """print('formato 2')
-        ruta2='C:/Users/DELL/Desktop/pruebaword/exp3956235/titulo/SOLCREDITOHIPOTECARIO_3956235_14.docx'
-        doc2=docx.Document(ruta2)
-        cambiarcomas(doc2)
-        camrbiarmillon(doc2)"""
-
-        """ruta3='C:/Users/DELL/Desktop/pruebaword/exp3892562/titulo/SOLCREDITOHIPOTECARIO_3892562_11.docx'
-        doc3=docx.Document(ruta3)
-        cambiarcomas(doc3)"""
-
-        #pdf_a_word('C:/Users/DELL/Desktop/pruebaword/exp3974679/minuta/Minuta de Compra Venta_3993816_3_TASACIONANTICIPADA_17062022.pdf')
-
-        #doc='C:/Users/DELL/Desktop/pruebaword/exp3974679/prestamofirma/SOLCREDITOHIPOTECARIO_3974679_9.docx'
-        #principal('exp3974679','prestamofirma','SOLCREDITOHIPOTECARIO_3974679_9',cliente)
-        #principal2(doc,cliente)
-
+        cambiarcomas(doc1,ruta_guardar)
+        cambiar_porcentaje(doc1,ruta_guardar)
+        buscar_palabra(cliente,doc1)
+        camrbiarmillon(doc1,ruta_guardar)
+        editar_linea(doc1,string,'',ruta_guardar)"""
         sys.exit()
