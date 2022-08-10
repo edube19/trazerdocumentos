@@ -1,7 +1,8 @@
 from array import array
+from audioop import add
 from calendar import c
 from cgi import print_arguments
-from re import T
+from re import T, sub
 from turtle import st
 from docx import Document
 from docx.shared import Cm
@@ -17,14 +18,57 @@ from recurso_prueba import*
 import docx
 from docx import Document
 from docx.shared import Cm
+from docx.shared import Pt
 
 def principalv3(ruta,string,ruta_guardar):
+    #para que almacene el documento en una variable
     doc=docx.Document(ruta)
-    buscar_palabra(string,doc)
-    editar_linea(doc,'SEÑOR NOTARIO:','‎',ruta_guardar)#U+200E es un caracter vacio
+
+    buscar_palabra(string,doc)#buscar si el nombre del cliente se encuentra en el documento
+
+    #U+200E es un caracter vacio, solo para "borrar" la palabra SEÑOR NOTARIO
+    editar_linea(doc,'SEÑOR NOTARIO:','‎',ruta_guardar)
+
+    #poner en literal la cantidad de porcentaje
     porcentaje_decimalv2(doc,ruta_guardar)
+
+    #cambiar las comas por puntos
     cambiarcomas(doc,ruta_guardar)
+
+    #en caso haya cantidades de mas de millon
     camrbiarmillon(doc,ruta_guardar)
+
+def modificartamano(ruta,string,ruta_guardar):#en construccion
+    doc=docx.Document(ruta)
+    ruta_aux='C:/Users/DELL/Desktop/pruebaword/modificaciones.docx'
+    l=cantidad_lineas(doc)
+    a=-1
+    c=0
+    cadenafinal=[]
+    doc=docx.Document(ruta)
+    doc_aux=docx.Document(ruta_aux)
+    for i in range(l):
+        cadena=doc.paragraphs[i].text
+        r=cadena.find(string) 
+        if r!=a:
+            guardar_cadena=cadena.split(string)
+            para=doc_aux.add_paragraph(string)
+            para.font.size = Pt(12)
+            string_nuevo=para
+            for j in range(0,len(guardar_cadena),2):
+                subcadena=guardar_cadena[j]
+                cadenafinal[j]=subcadena
+                try:
+                    cadenafinal[j+1]=string_nuevo
+                except Exception as e:
+                    pass
+            c=c+1
+        cadenafinal.clear()
+    doc.save(ruta_guardar)
+    if (c==0):
+        print('No se encontro')
+
+
 
 def leerdoc(doc):
     l=cantidad_lineas(doc)
