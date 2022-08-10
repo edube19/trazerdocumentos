@@ -5,7 +5,6 @@ from cgi import print_arguments
 from re import T, sub
 from turtle import st
 from docx import Document
-from docx.shared import Cm
 import aspose.words as aw
 from fitz import *
 from email.mime import image
@@ -14,30 +13,40 @@ from PIL import Image
 from pyparsing import condition_as_parse_action 
 from pytesseract import pytesseract 
 from pdf2image import convert_from_path
+from requests import delete
 from recurso_prueba import*
 import docx
 from docx import Document
 from docx.shared import Cm
 from docx.shared import Pt
+from docx.shared import Inches
+from docx.enum.text import WD_PARAGRAPH_ALIGNMENT
 
 def principalv3(ruta,string,ruta_guardar):
     #para que almacene el documento en una variable
     doc=docx.Document(ruta)
 
-    buscar_palabra(string,doc)#buscar si el nombre del cliente se encuentra en el documento
+    if (buscar_palabra(string,doc)):#buscar si el nombre del cliente se encuentra en el documento
+        
+        #U+200E es un caracter vacio, solo para "borrar" la palabra SEÑOR NOTARIO
+        editar_linea(doc,'SEÑOR NOTARIO:','‎',ruta_guardar)
 
-    #U+200E es un caracter vacio, solo para "borrar" la palabra SEÑOR NOTARIO
-    editar_linea(doc,'SEÑOR NOTARIO:','‎',ruta_guardar)
+        #poner en literal la cantidad de porcentaje
+        porcentaje_decimalv2(doc,ruta_guardar)
 
-    #poner en literal la cantidad de porcentaje
-    porcentaje_decimalv2(doc,ruta_guardar)
+        #cambiar las comas por puntos
+        cambiarcomas(doc,ruta_guardar)
 
-    #cambiar las comas por puntos
-    cambiarcomas(doc,ruta_guardar)
+        #en caso haya cantidades de mas de millon
+        camrbiarmillon(doc,ruta_guardar)
+    else:
+        print('El cliente no corresponde al documento')
 
-    #en caso haya cantidades de mas de millon
-    camrbiarmillon(doc,ruta_guardar)
-
+def reconstruir_string(string):
+    string=string.strip()#elimina los espacios en blanco del comienzo y final
+    ns = " ".join(string.split())
+    return ns
+    
 def modificartamano(ruta,string,ruta_guardar):#en construccion
     doc=docx.Document(ruta)
     ruta_aux='C:/Users/DELL/Desktop/pruebaword/modificaciones.docx'
@@ -67,8 +76,6 @@ def modificartamano(ruta,string,ruta_guardar):#en construccion
     doc.save(ruta_guardar)
     if (c==0):
         print('No se encontro')
-
-
 
 def leerdoc(doc):
     l=cantidad_lineas(doc)
@@ -125,7 +132,7 @@ def porcentaje_decimalv2(doc,ruta_guardar):
                         if punto!=a:
                             numero_separado=numero.split('.')#separa el string segun el caracter separador
                             long_decimal=len(numero_separado[1])
-                            cero='0'
+                            cero='0' 
                             decimal_cero=cero*long_decimal
                             if (decimal_cero!=numero_separado[1]):
                                 numeroconv1=int(numero_separado[0])#parte entera
@@ -134,7 +141,7 @@ def porcentaje_decimalv2(doc,ruta_guardar):
                                 porcentaje2=numero_to_letras(numeroconv2)
                                 porcentajeminus1=porcentaje1.lower()
                                 porcentajeminus2=porcentaje2.lower()
-                                nuevostring='% ('+porcentajeminus1+' coma '+porcentajeminus2+' por ciento)'
+                                nuevostring='% ('+porcentajeminus1+' punto '+porcentajeminus2+' por ciento)'
                                 guardar_cadena[j]=guardar_cadena[j]+nuevostring
                             else:
                                 numeroconv1=int(numero_separado[0])#parte entera
@@ -155,8 +162,26 @@ def porcentaje_decimalv2(doc,ruta_guardar):
                 nueva_linea=''
                 for parte in guardar_cadena:
                     nueva_linea=nueva_linea+parte
-                doc.paragraphs[i].text=nueva_linea 
-    porcentaje_tablas(doc)        
+                #
+                try:
+                    doc.paragraphs[i].text=''
+                    #del doc.paragraphs[i]
+                    #doc.paragraphs.pop(i).text
+                    #par= doc.add_paragraph()
+                    doc.paragraphs[i]=doc.add_paragraph()
+                    #run= par.add_run(nueva_linea)
+                    run=doc.paragraphs[i].add_run(nueva_linea)
+                    font = run.font
+                    font.name = 'Arial Narrow'
+                    font.size = Pt(12)
+                    #del doc.paragraphs[i]
+
+                except Exception as e:
+                    print(e)
+                #
+                #doc.paragraphs[i].text=nueva_linea 
+    porcentaje_tablas(doc) 
+
     doc.save(ruta_guardar) 
 
 def porcentaje_decimal(doc):#version obsoleta
@@ -270,19 +295,6 @@ def editar_linea(doc,string,linea_cambiar,ruta_guardar):
     else:
         doc.save(ruta_guardar)
 
-def eliminar_linea(doc,string):#por corregir
-    l=cantidad_lineas(doc)
-    a=-1
-    c=0
-    for i in range(l):
-        cadena=doc.paragraphs[i].text
-        r=cadena.find(string)
-        if r!=a:
-            del doc.paragraphs[i]
-            doc.save('C:/Users/DELL/Desktop/pruebaword/pruebaeliminacion.docx')
-    if (c==0):
-        print('No se encontro')
-
 def evitar_sobreescritura(cadena,string):#ponerlo dentro de un if
     cond=True
     a=-1
@@ -363,23 +375,23 @@ def cambiar_porcentaje(doc,ruta_guardar):#version obsoleta
     porcentaje_tablas(doc)
     doc.save(ruta_guardar)
 
-def buscar_palabra(string,doc):
-    #str_doc=str(doc)
+def buscar_palabra(string,doc):#debe devolver un booleano
     l=cantidad_lineas(doc)
     a=-1
     c=0
+    valor=False
+    string=string.upper()
+    string = reconstruir_string(string)
     for i in range(l):
         cadena=doc.paragraphs[i].text
         r=cadena.find(string)
         if r!=a:
-            #print('Se encontro en la linea '+str(i+1))
-            #print(doc.paragraphs[i].text)
             c=c+1
+            valor=True
+            break
     if (c==0):
-        buscar_en_tabla(string,doc)
-    else:
-        print('Se encontro '+str(c)+' veces')
-    return c
+        valor=buscar_en_tabla(string,doc)
+    return valor
 
 def cambiarcomas(doc,ruta_guardar):
     l=cantidad_lineas(doc)
@@ -416,6 +428,7 @@ def buscar_en_tabla(string,doc):
     leertabla=doc.tables
     resultado=0
     a=-1
+    cond=False
     for x in range(len(leertabla)):
         tabla=leertabla[x]#obtener la primera tabla
         for i in range(0,len(tabla.rows)):#filas
@@ -426,9 +439,10 @@ def buscar_en_tabla(string,doc):
                 if (r!=a):
                     print('Se encontro')
                     resultado=resultado+1
+                    cond=True
                     break
     if (resultado==0):
-        print('No se encontro')
+        return cond
 
 def comas_en_tabla(doc):
     leertabla=doc.tables
