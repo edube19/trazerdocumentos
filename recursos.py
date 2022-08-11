@@ -45,37 +45,30 @@ def principalv3(ruta,string,ruta_guardar):
 def reconstruir_string(string):
     string=string.strip()#elimina los espacios en blanco del comienzo y final
     ns = " ".join(string.split())
-    return ns
-    
-def modificartamano(ruta,string,ruta_guardar):#en construccion
-    doc=docx.Document(ruta)
-    ruta_aux='C:/Users/DELL/Desktop/pruebaword/modificaciones.docx'
+    return ns #retorna un string sin espacios dobles
+
+def tasa_fija_negrita(doc,nuevostring):
+    # nuevostring es el literal del porcentaje ej->(ocho punto treinta y  siete por ciento)
     l=cantidad_lineas(doc)
     a=-1
-    c=0
-    cadenafinal=[]
-    doc=docx.Document(ruta)
-    doc_aux=docx.Document(ruta_aux)
+    string='Tasa Fija'
+    #string = reconstruir_string(string)
     for i in range(l):
         cadena=doc.paragraphs[i].text
-        r=cadena.find(string) 
+        r=cadena.find(string)
         if r!=a:
-            guardar_cadena=cadena.split(string)
-            para=doc_aux.add_paragraph(string)
-            para.font.size = Pt(12)
-            string_nuevo=para
-            for j in range(0,len(guardar_cadena),2):
-                subcadena=guardar_cadena[j]
-                cadenafinal[j]=subcadena
-                try:
-                    cadenafinal[j+1]=string_nuevo
-                except Exception as e:
-                    pass
-            c=c+1
-        cadenafinal.clear()
-    doc.save(ruta_guardar)
-    if (c==0):
-        print('No se encontro')
+            try:
+                nuevacadena=cadena.split(nuevostring)
+                nuevacadena[0]=''
+                #doc.paragraphs[i].text=''
+                nuevacadena[0]=doc.add_paragraph()
+                run=doc.add_run(nuevostring)
+                font = run.font
+                font.name = 'Arial Narrow'
+                font.size = Pt(12)
+                font.bold = True #ponerlo en negrita
+            except Exception as e:
+                print(e)
 
 def leerdoc(doc):
     l=cantidad_lineas(doc)
@@ -165,119 +158,57 @@ def porcentaje_decimalv2(doc,ruta_guardar):
                 #
                 try:
                     doc.paragraphs[i].text=''
-                    #del doc.paragraphs[i]
-                    #doc.paragraphs.pop(i).text
-                    #par= doc.add_paragraph()
                     doc.paragraphs[i]=doc.add_paragraph()
-                    #run= par.add_run(nueva_linea)
                     run=doc.paragraphs[i].add_run(nueva_linea)
                     font = run.font
                     font.name = 'Arial Narrow'
                     font.size = Pt(12)
-                    #del doc.paragraphs[i]
-
                 except Exception as e:
                     print(e)
                 #
-                #doc.paragraphs[i].text=nueva_linea 
+                #tasa_fija_negrita(doc,nuevostring)
     porcentaje_tablas(doc) 
-
     doc.save(ruta_guardar) 
 
-def porcentaje_decimal(doc):#version obsoleta
-    l=cantidad_lineas(doc)
+def porcentaje_tablas(doc):
+    leertabla=doc.tables
     a=-1
-    lst=[]
-    for i in range(l):
-        cadena=doc.paragraphs[i].text
-        guardar_cadena=cadena.split('%')
-        for pos,char in enumerate(cadena):
-            if(char == '%'):
-                lst.append(pos)
-                #a=a+1
-        #r=cadena.find('%')#posicion en que se encuentra lo que se busca, en caso de no encontrarse devuelve -1
-        longitud=len(lst)
-        if (longitud>0):
-            for r in lst:
-            #if r!=a:
-                numero=''
-                contador=1
-                cond=True
-                while(cond):
-                    valor=cadena[r-contador]#obtenner el valor
-                    cond=valor.isdigit()#comprobar si es digito o no, si es falso acaba la ejecucion
-                    if (cond):
-                        numero=valor+numero#guardando el numero
-                        contador=contador+1#avanza para el siguiente valor
-                    elif(valor=='.'):# para casos → ab.cd%
-                        contador=contador+1
-                        numero='.'+numero
-                        cond=True
-                    elif (valor==' ' and numero==''):# para casos → ab.cd %
-                        contador=contador+1
-                        cond=True
-                try:
-                    punto=numero.find('.')
-                    if punto!=a:
-                        numero_separado=numero.split('.')#separa el string segun el caracter separador
-                        numeroconv1=int(numero_separado[0])#parte entera
-                        numeroconv2=int(numero_separado[1])#parte decimal
-                        porcentaje1=numero_to_letras(numeroconv1)
-                        porcentaje2=numero_to_letras(numeroconv2)
-                        porcentajeminus1=porcentaje1.lower()
-                        porcentajeminus2=porcentaje2.lower()
-                        nuevostring='%('+porcentajeminus1+' coma '+porcentajeminus2+' por ciento)'
-                        nueva_cadena=cadena.replace('%',nuevostring,1)
-                        doc.paragraphs[i].text=nueva_cadena
-                    else:
-                        numeroconv1=int(numero)
-                        porcentaje1=numero_to_letras(numeroconv1)
-                        porcentajeminus1=porcentaje1.lower()
-                        nuevostring='%('+porcentajeminus1+' por ciento)'
-                        nueva_cadena=cadena.replace('%',nuevostring)
-                        doc.paragraphs[i].text=nueva_cadena
-                except Exception as e:
-                    print(e)
-        lst.clear() #vaciar la lista  
-
-    doc.save('C:/Users/DELL/Desktop/pruebaword/pruebadecimalesrepetidos.docx')          
-
-def porcentaje_general(doc,ruta_guardar):#version obsoleta
-    l=cantidad_lineas(doc)
-    a=-1
-    contador=1
-    cond=True
-    numero1=''
-    numero2=''
-    m=1
-    n=1
-    for i in range(l):
-        cadena=doc.paragraphs[i].text
-        r=cadena.find('%')#posicion en que se encuentra la coma
-        if r!=a:
-            while(cond):
-                num=cadena[r-contador]
-                cond=num.isdigit()
-                contador=contador+1
-                m=m+1
-                numero1=num+numero1
-            cond=True
-            contador=1
-            while(cond):
-                num=cadena[r-m-contador-1]
-                cond=num.isdigit()
-                contador=contador+1
-                n=n+1
-                numero2=num+numero2
-        numeroconv1=int(numero1)    
-        numeroconv2=int(numero2)
-        porcentaje1=numero_to_letras(numeroconv1)
-        porcentajeminus1=porcentaje1.lower()
-        porcentaje2=numero_to_letras(numeroconv2)
-        porcentajeminus2=porcentaje2.lower()
-        nuevostring='%('+porcentajeminus2+' punto '+porcentajeminus1+' por ciento)'
-        print(nuevostring)
-    doc.save(ruta_guardar)        
+    for x in range(len(leertabla)):
+        tabla=leertabla[x]#obtener la primera tabla
+        for i in range(0,len(tabla.rows)):#filas
+            for j in range(0,len(tabla.columns)):#columnas
+                cadena=tabla.cell(i,j).text
+                #nc=cadena[20:30]
+                #print(nc)
+                if (evitar_sobreescritura(cadena,'por ciento')):
+                    r=cadena.find('%')
+                    if (r!=a):
+                #print('Se encontro en la linea '+str(i+1))
+                #print(doc.paragraphs[i].text)
+                        num1=cadena[r-1]
+                        cond1=num1.isdigit()
+                        numero=num1
+                        if (cond1):
+                            num2=cadena[r-2]
+                            cond2=num2.isdigit()
+                            if(cond2):
+                                numero=num2+num1
+                                num3=cadena[r-3]
+                                cond3=num3.isdigit()
+                                if (cond3):
+                                    numero=num3+num2+num1
+                        #print(numero)   
+                        try:      
+                            numeroconv=int(numero)
+                            #intnum=int(numero)
+                            porcentaje=numero_to_letras(numeroconv)
+                            #porcentaje=numero_to_letras(numero)
+                            porcentajeminus=porcentaje.lower()
+                            nuevostring='%('+porcentajeminus+' por ciento)'
+                            nueva_cadena=cadena.replace('%',nuevostring)
+                            tabla.cell(i,j).text=nueva_cadena
+                        except Exception as e:
+                            print(e)
 
 def editar_linea(doc,string,linea_cambiar,ruta_guardar):
     l=cantidad_lineas(doc)
@@ -381,7 +312,7 @@ def buscar_palabra(string,doc):#debe devolver un booleano
     c=0
     valor=False
     string=string.upper()
-    string = reconstruir_string(string)
+    string = reconstruir_string(string)# elimina espacios en blanco repetidos
     for i in range(l):
         cadena=doc.paragraphs[i].text
         r=cadena.find(string)
@@ -463,46 +394,7 @@ def comas_en_tabla(doc):
                         #print(nueva_cadena)
                         tabla.cell(i,j).text=nueva_cadena
 
-def porcentaje_tablas(doc):
-    leertabla=doc.tables
-    a=-1
-    for x in range(len(leertabla)):
-        tabla=leertabla[x]#obtener la primera tabla
-        for i in range(0,len(tabla.rows)):#filas
-            for j in range(0,len(tabla.columns)):#columnas
-                #print(tabla.cell(i,j).text)
-                cadena=tabla.cell(i,j).text
-                #nc=cadena[20:30]
-                #print(nc)
-                if (evitar_sobreescritura(cadena,'por ciento')):
-                    r=cadena.find('%')
-                    if (r!=a):
-                #print('Se encontro en la linea '+str(i+1))
-                #print(doc.paragraphs[i].text)
-                        num1=cadena[r-1]
-                        cond1=num1.isdigit()
-                        numero=num1
-                        if (cond1):
-                            num2=cadena[r-2]
-                            cond2=num2.isdigit()
-                            if(cond2):
-                                numero=num2+num1
-                                num3=cadena[r-3]
-                                cond3=num3.isdigit()
-                                if (cond3):
-                                    numero=num3+num2+num1
-                        #print(numero)   
-                        try:      
-                            numeroconv=int(numero)
-                            #intnum=int(numero)
-                            porcentaje=numero_to_letras(numeroconv)
-                            #porcentaje=numero_to_letras(numero)
-                            porcentajeminus=porcentaje.lower()
-                            nuevostring='%('+porcentajeminus+' por ciento)'
-                            nueva_cadena=cadena.replace('%',nuevostring)
-                            tabla.cell(i,j).text=nueva_cadena
-                        except Exception as e:
-                            print(e)
+
 
 def agregar_parrafo(string,doc):
     p=doc.add_paragraph(string)
